@@ -124,7 +124,7 @@ class VkApi:
                 if recursion_items:
                     items.extend(recursion_items)
 
-        return {count_name: count_all, items_name: items_name}
+        return {count_name: count_all, items_name: items}
 
     def get_group_members(self, group_id):
         count = 1000
