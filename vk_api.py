@@ -126,6 +126,40 @@ class VkApi:
 
         return {count_name: count_all, items_name: items}
 
+    def _get_objects_item(self, object_ids, options, offset=0, additional_options=None):
+        remaining_object_count = len(object_ids) - offset
+        remaining_object_iter = offset
+        method_list = []
+        key_list = []
+        method_name = options.get('method_name')
+        object_name = options.get('object_name')
+
+        for method_id in range(self.method_execute_query_count):
+            if remaining_object_count > 0:
+                object_id = object_ids[remaining_object_iter]
+                method_options = {object_name: object_id}
+                if additional_options:
+                    for options_key, options_value in additional_options.items():
+                        method_options[options_key] = options_value
+                method_list.append({method_name: method_options})
+                key_list.append(object_id)
+                remaining_object_count -= 1
+                remaining_object_iter += 1
+
+        response = self._use_execute(method_list, key_list)
+        objects = response
+
+        if remaining_object_count > 0:
+            recursion_objects = self._get_objects_item(object_ids=object_ids,
+                                                       options=options,
+                                                       offset=remaining_object_iter,
+                                                       additional_options=additional_options)
+            if recursion_objects:
+                for object_id, object_dict in recursion_objects.items():
+                    objects[object_id] = object_dict
+
+        return objects
+
     def get_group_members(self, group_id):
         count = 1000
         options = {
@@ -142,3 +176,9 @@ class VkApi:
             count=count,
             options=options,
             additional_options=additional_options)
+
+    def get_users_groups(self, user_ids):
+        options = {'method_name': 'groups.get',
+                   'object_name': 'user_id'}
+        return self._get_objects_item(object_ids=user_ids,
+                                      options=options)
