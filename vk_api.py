@@ -22,6 +22,7 @@ class VkApi:
         self.__stamp_time = clock()
 
         self.enable_print = True
+        self.print_info = 'execute_query'
 
     def __set_time(self):
         self.__stamp_time = clock()
@@ -45,6 +46,10 @@ class VkApi:
 
         response = urlopen(query_url).read().decode()
         self.__set_time()
+
+        if self.enable_print:
+            print('%s: %s' % (self.name, self.print_info))
+
         return response
 
     def __print_response_error(self, response):
@@ -89,12 +94,14 @@ class VkApi:
         return self._get_response(method='execute', options=options)
 
     def _get_object_items(self, object_id, count, options, offset=0, additional_options=None):
+
         method = options.get('method')
         object_name = options.get('object_name')
         items_name = options.get('items_name')
         count_name = options.get('count_name')
         offset_name = options.get('offset_name')
         method_list = []
+        self.print_info = '_get_object_items:%s %d' % (method, offset)
 
         for method_id in range(self.method_execute_query_count):
             method_options = {object_name: object_id, count_name: count, offset_name: offset}
@@ -131,8 +138,9 @@ class VkApi:
         remaining_object_iter = offset
         method_list = []
         key_list = []
-        method_name = options.get('method_name')
+        method = options.get('method')
         object_name = options.get('object_name')
+        self.print_info = '_get_objects_item: %s %d' % (method, offset)
 
         for method_id in range(self.method_execute_query_count):
             if remaining_object_count > 0:
@@ -141,7 +149,7 @@ class VkApi:
                 if additional_options:
                     for options_key, options_value in additional_options.items():
                         method_options[options_key] = options_value
-                method_list.append({method_name: method_options})
+                method_list.append({method: method_options})
                 key_list.append(object_id)
                 remaining_object_count -= 1
                 remaining_object_iter += 1
@@ -178,7 +186,7 @@ class VkApi:
             additional_options=additional_options)
 
     def get_users_groups(self, user_ids):
-        options = {'method_name': 'groups.get',
+        options = {'method': 'groups.get',
                    'object_name': 'user_id'}
         return self._get_objects_item(object_ids=user_ids,
                                       options=options)
