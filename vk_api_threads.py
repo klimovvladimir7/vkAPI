@@ -7,15 +7,15 @@ class VkApiTreads:
     def __init__(self, tokens_file_name=''):
         self.tokens = []
         self._api_list = []
+        self._threads = []
         if tokens_file_name:
             self.read_tokens(tokens_file_name)
-        self._treads = []
 
     def _init_api_list(self):
         for i in range(len(self.tokens)):
             if i >= len(self._api_list):
                 self._api_list.append(VkApi(name=('job_%d' % i), token=self.tokens[i]))
-                self._treads.append(None)
+                self._threads.append(None)
 
     def set_tokens(self, tokens):
         self.tokens.extend(tokens)
@@ -55,13 +55,13 @@ class VkApiTreads:
         threads_responses = []
         print('object_ids_parts =', object_ids_parts)
         for thread_id in range(threads_count):
-            self._treads[thread_id] = Thread(target=self._get_thread_response,
-                                             args=(object_ids_parts[thread_id],
-                                                   thread_id,
-                                                   method,
-                                                   threads_responses))
-        for thread in self._treads:
+            self._threads[thread_id] = Thread(target=self._get_thread_response,
+                                              args=(object_ids_parts[thread_id],
+                                                    thread_id,
+                                                    method,
+                                                    threads_responses))
+        for thread in self._threads:
             thread.start()
-        for thread in self._treads:
+        for thread in self._threads:
             thread.join()
         return threads_responses
