@@ -190,3 +190,12 @@ class VkApi:
                    'object_name': 'user_id'}
         return self._get_objects_item(object_ids=user_ids,
                                       options=options)
+
+    def run_method(self, object_ids, method):
+        if method == 'get_group_members':
+            response = {}
+            for object_id in object_ids:
+                response[object_id] = self.get_group_members(object_id)
+            return response
+        elif method == 'get_users_groups':
+            return self.get_users_groups(object_ids)
