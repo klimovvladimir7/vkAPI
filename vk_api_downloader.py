@@ -27,10 +27,12 @@ class VkApiDownloader:
         except OSError:
             pass
 
-    def set_file_name(self, file_name, dir_name=None):
+    def set_file_name(self, file_name, dir_name=None, count=None):
         self.file_name = file_name
         if dir_name:
             self.dir_name = dir_name
+        if count:
+            self.count = count
         self._dir_init()
         self._hash_init()
 
