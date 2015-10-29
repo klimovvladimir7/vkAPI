@@ -53,7 +53,6 @@ class VkApiTreads:
         object_ids_parts = self._split_object_ids(object_ids)
         threads_count = len(self.tokens)
         threads_responses = []
-        print('object_ids_parts =', object_ids_parts)
         for thread_id in range(threads_count):
             self._threads[thread_id] = Thread(target=self._get_thread_response,
                                               args=(object_ids_parts[thread_id],
