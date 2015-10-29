@@ -15,6 +15,7 @@ class VkApi:
         self._url = 'https://api.vk.com/method/'
         self._version = '5.37'
         self.method_execute_query_count = 25
+        self.inner_count = 10
         self.sleep_time = 0.25
         self.except_time = 2
         self.except_count = 0
@@ -168,6 +169,46 @@ class VkApi:
 
         return objects
 
+    def _get_inner_objects_item(self, object_ids, options, offset=0, additional_options=None):
+        remaining_object_count = len(object_ids) - offset
+        remaining_object_iter = offset
+        method_list = []
+        method = options.get('method')
+        object_name = options.get('object_name')
+        self.print_info = '_get_inner_objects_item: %s %d' % (method, offset)
+
+        for method_id in range(self.method_execute_query_count):
+            if remaining_object_count > 0:
+                object_id = []
+                for inner_iter in range(self.inner_count):
+                    if remaining_object_count > 0:
+                        object_id.append(str(object_ids[remaining_object_iter]))
+                        remaining_object_count -= 1
+                        remaining_object_iter += 1
+                object_id = ','.join(object_id)
+
+                method_options = {object_name: object_id}
+                if additional_options:
+                    for options_key, options_value in additional_options.items():
+                        method_options[options_key] = options_value
+                method_list.append({method: method_options})
+
+        items = []
+        response = self._use_execute(method_list)
+        for execute_key, items_list in response.items():
+            items.extend(items_list)
+
+        if remaining_object_count > 0:
+            recursion_items = self._get_inner_objects_item(object_ids=object_ids,
+                                                           options=options,
+                                                           offset=remaining_object_iter,
+                                                           additional_options=additional_options)
+            if recursion_items:
+                if recursion_items:
+                    items.extend(recursion_items)
+
+        return items
+
     def get_group_members(self, group_id):
         count = 1000
         options = {
@@ -191,6 +232,16 @@ class VkApi:
         return self._get_objects_item(object_ids=user_ids,
                                       options=options)
 
+    def get_groups_info(self, group_ids):
+        options = {'method': 'groups.getById',
+                   'object_name': 'group_ids'}
+
+        additional_options = {'fields': 'members_count'}
+
+        return self._get_inner_objects_item(object_ids=group_ids,
+                                            options=options,
+                                            additional_options=additional_options)
+
     def run_method(self, object_ids, method):
         if method == 'get_group_members':
             response = {}
@@ -199,3 +250,5 @@ class VkApi:
             return response
         elif method == 'get_users_groups':
             return self.get_users_groups(object_ids)
+        elif method == 'get_groups_info':
+            return self.get_groups_info(object_ids)
