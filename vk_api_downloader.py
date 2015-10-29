@@ -4,12 +4,12 @@ from vk_api_threads import VkApiTreads
 
 class VkApiDownloader:
 
-    def __init__(self, tokens_file_name='', dir_name='data', file_name='download.txt'):
+    def __init__(self, tokens_file_name='', count=1000, dir_name='data', file_name='download'):
         self.vk_api_threads = VkApiTreads(tokens_file_name=tokens_file_name)
         self.dir_name = dir_name
         self.file_name = file_name
         self.file_name_info = '_' + self.file_name
-        self.object_ids_part_len = 1000
+        self.count = count
         self._hash = set()
         self._dir_init()
         self._hash_init()
@@ -40,7 +40,7 @@ class VkApiDownloader:
         object_ids_iter = 1
         for object_id in object_ids:
             if object_id not in self._hash:
-                if object_ids_iter % self.object_ids_part_len == 0:
+                if object_ids_iter % self.count == 0:
                     parts.append(part)
                     part = []
                 part.append(object_id)
