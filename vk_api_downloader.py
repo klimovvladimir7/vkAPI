@@ -29,6 +29,7 @@ class VkApiDownloader:
 
     def set_file_name(self, file_name, dir_name=None, count=None):
         self.file_name = file_name
+        self.file_name_info = '_' + self.file_name
         if dir_name:
             self.dir_name = dir_name
         if count:
