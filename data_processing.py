@@ -59,3 +59,20 @@ def sorted_by_pages_and_groups(groups_top, tokens_file_name, pages_count, groups
                                     'top_value': top_value}
                 groups_iter += 1
     return {'pages': pages, 'groups': groups}
+
+
+def save_pages_and_groups(pages_and_groups, pages_file_name, groups_file_name):
+    pages = pages_and_groups.get('pages')
+    with open(pages_file_name, 'w') as file:
+        for page_id, page_info in pages.items():
+            is_closed = page_info.get('is_closed')
+            member_count = page_info.get('members_count')
+            if not is_closed and member_count:
+                file.write(str(page_id) + ':' + str(member_count))
+    groups = pages_and_groups.get('groups')
+    with open(groups_file_name, 'w') as file:
+        for group_id, group_info in groups.items():
+            is_closed = group_info.get('is_closed')
+            member_count = group_info.get('members_count')
+            if not is_closed and member_count:
+                file.write(str(group_id) + ':' + str(member_count))
