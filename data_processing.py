@@ -108,7 +108,7 @@ def save_pages_and_groups(pages_and_groups, pages_file_name, groups_file_name):
                 file.write('%s:%s:%s\n' % (str(group_id), str(member_count), str(top_value)))
 
 
-def download_groups_members(groups_file_name, output_dir, tokens_file_name, output_file_name):
+def download_groups_members(groups_file_name, output_dir, tokens_file_name, output_file_name, save_count):
     groups = {}
     with open(groups_file_name, 'r') as file:
         for row in file:
@@ -123,7 +123,7 @@ def download_groups_members(groups_file_name, output_dir, tokens_file_name, outp
 
     if groups_ids:
         downloader = VkApiDownloader(tokens_file_name=tokens_file_name)
-        downloader.set_file_name(file_name=output_file_name, dir_name=output_dir, count=10)
+        downloader.set_file_name(file_name=output_file_name, dir_name=output_dir, count=save_count)
         downloader.download(groups_ids, method='get_group_members')
 
 
