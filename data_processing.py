@@ -68,11 +68,11 @@ def save_pages_and_groups(pages_and_groups, pages_file_name, groups_file_name):
             is_closed = page_info.get('is_closed')
             member_count = page_info.get('members_count')
             if not is_closed and member_count:
-                file.write(str(page_id) + ':' + str(member_count))
+                file.write('%s:%s\n' % (str(page_id), str(member_count)))
     groups = pages_and_groups.get('groups')
     with open(groups_file_name, 'w') as file:
         for group_id, group_info in groups.items():
             is_closed = group_info.get('is_closed')
             member_count = group_info.get('members_count')
             if not is_closed and member_count:
-                file.write(str(group_id) + ':' + str(member_count))
+                file.write('%s:%s\n' % (str(group_id), str(member_count)))
