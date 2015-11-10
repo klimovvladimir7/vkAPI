@@ -144,9 +144,9 @@ def get_recovery_groups_top(groups_file_name, output_dir, output_file_name, prim
     return recovery_groups_top
 
 
-def get_pages_top(pages_file_name):
+def read_top(top_file_name):
     page_top = {}
-    with open(pages_file_name, 'r') as file:
+    with open(top_file_name, 'r') as file:
         for row in file:
             if row:
                 row_data = [int(i) for i in row.strip('\n').split(':')]
