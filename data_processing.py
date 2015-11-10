@@ -1,6 +1,7 @@
 from vk_api_threads import VkApiTreads
 from vk_api_downloader import VkApiDownloader
 
+
 def get_groups_top(file_name, count, count_print=0):
     groups_top = {}
     i = 1
@@ -63,16 +64,25 @@ def sorted_by_pages_and_groups(groups_top, tokens_file_name, pages_count, groups
 
 def save_pages_and_groups(pages_and_groups, pages_file_name, groups_file_name):
     pages = pages_and_groups.get('pages')
+    pages_top = {page_id: page_info.get('top_value') for (page_id, page_info) in pages.items()}
+    pages_sort = (page_id for page_id in sorted(pages_top, key=pages_top.get, reverse=True))
+
     with open(pages_file_name, 'w') as file:
-        for page_id, page_info in pages.items():
+        for page_id in pages_sort:
+            page_info = pages.get(page_id)
             is_closed = page_info.get('is_closed')
             member_count = page_info.get('members_count')
             top_value = page_info.get('top_value')
             if not is_closed and member_count:
                 file.write('%s:%s:%s\n' % (str(page_id), str(member_count), str(top_value)))
+
     groups = pages_and_groups.get('groups')
+    groups_top = {group_id: group_info.get('top_value') for (group_id, group_info) in groups.items()}
+    groups_sort = (group_id for group_id in sorted(groups_top, key=groups_top.get, reverse=True))
+
     with open(groups_file_name, 'w') as file:
-        for group_id, group_info in groups.items():
+        for group_id in groups_sort:
+            group_info = groups.get(group_id)
             is_closed = group_info.get('is_closed')
             member_count = group_info.get('members_count')
             top_value = group_info.get('top_value')
@@ -127,3 +137,25 @@ def get_pages_top(pages_file_name):
                 top_value = row_data[2]
                 page_top[page_id] = {'members_count': members_count, 'top_value': top_value}
     return page_top
+
+
+def save_recovery_top(recovery_groups_top, pages_top, count, recovery_top_file_name):
+    union_top = recovery_groups_top.copy()
+    for page_id, page_info in pages_top.items():
+        union_top[page_id] = page_info
+    top = {}
+    for group_id, group_info in union_top.items():
+        top_value = group_info.get('top_value')
+        top[group_id] = top_value
+    top_sort = ((group_id, top[group_id]) for group_id in sorted(top, key=top.get, reverse=True))
+    i = 1
+    result_top = {}
+    with open(recovery_top_file_name, 'w') as file:
+        for group_id, top_value in top_sort:
+            members_count = union_top.get(group_id).get('members_count')
+            file.write('%d:%s:%d\n' % (group_id, str(members_count), top_value))
+            result_top[group_id] = top_value
+            i += 1
+            if i > count:
+                break
+    return result_top
