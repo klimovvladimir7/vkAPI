@@ -37,8 +37,7 @@ def sorted_by_pages_and_groups(groups_top, tokens_file_name, pages_count, groups
     response_list = api_threads.run(object_ids=object_ids, method='get_groups_info')
     groups = {}
     pages = {}
-    groups_iter = 0
-    pages_iter = 0
+
     for response in response_list:
         for group_info in response:
             group_id = group_info.get('id')
@@ -47,19 +46,38 @@ def sorted_by_pages_and_groups(groups_top, tokens_file_name, pages_count, groups
             is_closed = group_info.get('is_closed')
             members_count = group_info.get('members_count')
             top_value = groups_top[group_id]
-            if group_type == 'page' and pages_count > pages_iter:
+            if group_type == 'page':
                 pages[group_id] = {"screen_name": screen_name,
                                    'is_closed': is_closed,
                                    'members_count': members_count,
                                    'top_value': top_value}
-                pages_iter += 1
-            elif group_type == 'group' and groups_count > groups_iter:
+            elif group_type == 'group':
                 groups[group_id] = {"screen_name": screen_name,
                                     'is_closed': is_closed,
                                     'members_count': members_count,
                                     'top_value': top_value}
-                groups_iter += 1
-    return {'pages': pages, 'groups': groups}
+    pages_top = {page_id: page_info.get('top_value') for (page_id, page_info) in pages.items()}
+    pages_sort = (page_id for page_id in sorted(pages_top, key=pages_top.get, reverse=True))
+    pages_top = {}
+    page_iter = 0
+
+    for page_id in pages_sort:
+        pages_top[page_id] = pages.get(page_id)
+        page_iter += 1
+        if page_iter >= pages_count:
+            break
+
+    groups_top = {group_id: group_info.get('top_value') for (group_id, group_info) in groups.items()}
+    groups_sort = (group_id for group_id in sorted(groups_top, key=groups_top.get, reverse=True))
+    groups_top = {}
+    group_iter = 0
+
+    for group_id in groups_sort:
+        groups_top[group_id] = groups.get(group_id)
+        group_iter += 1
+        if group_iter >= groups_count:
+            break
+    return {'pages': pages_top, 'groups': groups_top}
 
 
 def save_pages_and_groups(pages_and_groups, pages_file_name, groups_file_name):
