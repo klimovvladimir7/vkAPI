@@ -82,3 +82,4 @@ class VkApiDownloader:
         for object_ids_part in object_ids_parts:
             response_list = self.vk_api_threads.run(object_ids=object_ids_part, method=method)
             self._write_response_list(response_list, method)
+            response_list.clear()
