@@ -1,5 +1,5 @@
 from vk_api_threads import VkApiTreads
-
+from vk_api_downloader import VkApiDownloader
 
 def get_groups_top(file_name, count, count_print=0):
     groups_top = {}
@@ -76,3 +76,22 @@ def save_pages_and_groups(pages_and_groups, pages_file_name, groups_file_name):
             member_count = group_info.get('members_count')
             if not is_closed and member_count:
                 file.write('%s:%s\n' % (str(group_id), str(member_count)))
+
+
+def download_groups_members(groups_file_name, output_dir, tokens_file_name):
+    groups = {}
+    with open(groups_file_name, 'r') as file:
+        for row in file:
+            if row:
+                row_data = row.strip('\n').split(':')
+                group_id = int(row_data[0])
+                members_count = int(row_data[1])
+                if group_id and members_count:
+                    groups[group_id] = members_count
+
+    groups_ids = [group_id for group_id in sorted(groups, key=groups.get, reverse=False)]
+
+    if groups_ids:
+        downloader = VkApiDownloader(tokens_file_name=tokens_file_name)
+        downloader.set_file_name(file_name='group', dir_name=output_dir, count=10)
+        downloader.download(groups_ids, method='get_group_members')
