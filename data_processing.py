@@ -67,18 +67,20 @@ def save_pages_and_groups(pages_and_groups, pages_file_name, groups_file_name):
         for page_id, page_info in pages.items():
             is_closed = page_info.get('is_closed')
             member_count = page_info.get('members_count')
+            top_value = page_info.get('top_value')
             if not is_closed and member_count:
-                file.write('%s:%s\n' % (str(page_id), str(member_count)))
+                file.write('%s:%s:%s\n' % (str(page_id), str(member_count), str(top_value)))
     groups = pages_and_groups.get('groups')
     with open(groups_file_name, 'w') as file:
         for group_id, group_info in groups.items():
             is_closed = group_info.get('is_closed')
             member_count = group_info.get('members_count')
+            top_value = group_info.get('top_value')
             if not is_closed and member_count:
-                file.write('%s:%s\n' % (str(group_id), str(member_count)))
+                file.write('%s:%s:%s\n' % (str(group_id), str(member_count), str(top_value)))
 
 
-def download_groups_members(groups_file_name, output_dir, tokens_file_name):
+def download_groups_members(groups_file_name, output_dir, tokens_file_name, output_file_name):
     groups = {}
     with open(groups_file_name, 'r') as file:
         for row in file:
@@ -93,5 +95,35 @@ def download_groups_members(groups_file_name, output_dir, tokens_file_name):
 
     if groups_ids:
         downloader = VkApiDownloader(tokens_file_name=tokens_file_name)
-        downloader.set_file_name(file_name='group', dir_name=output_dir, count=10)
+        downloader.set_file_name(file_name=output_file_name, dir_name=output_dir, count=10)
         downloader.download(groups_ids, method='get_group_members')
+
+
+def get_recovery_groups_top(groups_file_name, output_dir, output_file_name, primordial_users_set):
+    with open(groups_file_name, 'r') as file:
+        group_list = [int(row.strip('\n').split(':')[0]) for row in file if row]
+
+    recovery_groups_top = {}
+    for group_id in group_list:
+        try:
+            with open('%s/%s_%d' % (output_dir, output_file_name, group_id), 'r') as file:
+                members = set(int(row.strip('\n')) for row in file if row)
+            top_value = len(members & primordial_users_set)
+            recovery_groups_top[group_id] = {'top_value': top_value, 'members_count': len(members)}
+            print('get_recovery_groups_top: group_id = %d top_value = %d' % (group_id, top_value))
+        except FileNotFoundError:
+            print('get_recovery_groups_top: file %s/%s_%d not found)' % (output_dir, output_file_name, group_id))
+    return recovery_groups_top
+
+
+def get_pages_top(pages_file_name):
+    page_top = {}
+    with open(pages_file_name, 'r') as file:
+        for row in file:
+            if row:
+                row_data = [int(i) for i in row.strip('\n').split(':')]
+                page_id = row_data[0]
+                members_count = row_data[1]
+                top_value = row_data[2]
+                page_top[page_id] = {'members_count': members_count, 'top_value': top_value}
+    return page_top
