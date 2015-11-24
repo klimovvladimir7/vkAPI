@@ -1,5 +1,5 @@
 from threading import Thread
-from vk_api import VkApi
+from .vk_api import VkApi
 
 
 class VkApiTreads:

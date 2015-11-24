@@ -1,5 +1,5 @@
-from vk_api_threads import VkApiTreads
-from vk_api_downloader import VkApiDownloader
+from .vk_api_threads import VkApiTreads
+from .vk_api_downloader import VkApiDownloader
 
 
 def get_groups_top(file_name, count, count_print=0):

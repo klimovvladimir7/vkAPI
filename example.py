@@ -1,5 +1,5 @@
-from vk_api_downloader import VkApiDownloader
-from vk_api_threads import VkApiTreads
+from .vk_api_downloader import VkApiDownloader
+from .vk_api_threads import VkApiTreads
 
 # download users_groups
 x = VkApiDownloader(tokens_file_name='tokens.txt')

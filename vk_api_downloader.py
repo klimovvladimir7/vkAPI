@@ -1,5 +1,5 @@
 from os import makedirs
-from vk_api_threads import VkApiTreads
+from .vk_api_threads import VkApiTreads
 
 
 class VkApiDownloader:
