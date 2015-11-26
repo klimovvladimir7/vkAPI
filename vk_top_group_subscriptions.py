@@ -1,6 +1,6 @@
-from data_processing import *
-from vk_api_threads import VkApiTreads
-from vk_api_downloader import VkApiDownloader
+from .data_processing import *
+from .vk_api_threads import VkApiTreads
+from .vk_api_downloader import VkApiDownloader
 from os import path
 from os import makedirs
 
@@ -20,8 +20,21 @@ def top_group_subscriptions(group_id, tokens_file_name, top_count=100, download_
 
     try:
         makedirs('data/users_groups_subscriptions/')
+    except FileExistsError:
+        pass
+    try:
+        makedirs('data/users_groups_subscriptions/')
+    except FileExistsError:
+        pass
+    try:
         makedirs('data/group_members')
+    except FileExistsError:
+        pass
+    try:
         makedirs('data/tops')
+    except FileExistsError:
+        pass
+    try:
         makedirs('data/recovery_tops')
     except FileExistsError:
         pass
@@ -39,15 +52,15 @@ def top_group_subscriptions(group_id, tokens_file_name, top_count=100, download_
     result_file = 'data/recovery_tops/top_info_%d' % group_id
 
     if not path.exists("%s/%s" % (users_groups_dir_name, users_groups_file_name)):
-        vk_downloader = VkApiDownloader(tokens_file_name='tokens.txt')
+        vk_downloader = VkApiDownloader(tokens_file_name=tokens_file_name)
         vk_downloader.set_file_name(file_name=users_groups_file_name,
                                     dir_name=users_groups_dir_name,
                                     count=5000)
         vk_downloader.download(member_ids, method='get_users_groups')
 
-    groups_top = get_groups_top('%s/%s' % (users_groups_dir_name, users_groups_file_name), top_count*100)
-
     if (not path.exists(pages_file_name)) or (not path.exists(groups_file_name)):
+        groups_top = get_groups_top('%s/%s' % (users_groups_dir_name, users_groups_file_name), top_count*20)
+
         pages_and_groups = sorted_by_pages_and_groups(groups_top=groups_top,
                                                       tokens_file_name=tokens_file_name,
                                                       pages_count=top_count,
@@ -101,3 +114,5 @@ def top_group_subscriptions(group_id, tokens_file_name, top_count=100, download_
     with open(result_file, 'w', encoding="utf-8") as file:
         for group_id in top_sort:
             file.write('%s\n' % response_dict.get(group_id))
+
+
