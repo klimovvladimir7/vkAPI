@@ -13,31 +13,16 @@ def top_group_subscriptions(group_id, tokens_file_name, top_count=100, download_
 
     with open(tokens_file_name, 'r') as file:
         tokens = [token for token in file]
-        tokens_count = len(tokens)
 
-    if not tokens_count:
+    if not tokens:
         return
 
-    try:
-        makedirs('data/users_groups_subscriptions/')
-    except FileExistsError:
-        pass
-    try:
-        makedirs('data/users_groups_subscriptions/')
-    except FileExistsError:
-        pass
-    try:
-        makedirs('data/group_members')
-    except FileExistsError:
-        pass
-    try:
-        makedirs('data/tops')
-    except FileExistsError:
-        pass
-    try:
-        makedirs('data/recovery_tops')
-    except FileExistsError:
-        pass
+    dirs_list = ['data/users_groups_subscriptions/', 'data/group_members', 'data/tops', 'data/recovery_tops']
+    for dir_name in dirs_list:
+        try:
+            makedirs(dir_name)
+        except FileExistsError:
+            pass
 
     users_groups_dir_name = 'data/users_groups_subscriptions'
     users_groups_file_name = 'users_groups_subscriptions_%d' % group_id
@@ -65,32 +50,50 @@ def top_group_subscriptions(group_id, tokens_file_name, top_count=100, download_
                                                       tokens_file_name=tokens_file_name,
                                                       pages_count=top_count,
                                                       groups_count=top_count)
+
         save_pages_and_groups(pages_and_groups=pages_and_groups,
                               pages_file_name=pages_file_name,
                               groups_file_name=groups_file_name)
 
-    download_groups_members(groups_file_name=groups_file_name,
-                            tokens_file_name=tokens_file_name,
-                            output_dir=group_members_output_dir,
-                            output_file_name=group_members_output_file_name,
-                            save_count=tokens_count)
+    tokens_count = len(tokens)
+
+    while tokens_count:
+        try:
+            download_groups_members(groups_file_name=groups_file_name,
+                                    tokens_file_name=tokens_file_name,
+                                    output_dir=group_members_output_dir,
+                                    output_file_name=group_members_output_file_name,
+                                    save_count=tokens_count)
+            tokens_count = 0
+        except MemoryError:
+            print('download_groups_members: MemoryError')
+            tokens_count -= 1
+    tokens_count = len(tokens)
+
+    while tokens_count:
+        try:
+            download_groups_members(groups_file_name=pages_file_name,
+                                    tokens_file_name=tokens_file_name,
+                                    output_dir=group_members_output_dir,
+                                    output_file_name=group_members_output_file_name,
+                                    save_count=tokens_count)
+            tokens_count = 0
+        except MemoryError:
+            print('download_groups_members: MemoryError')
+            tokens_count -= 1
 
     if not path.exists(recovery_top_file_name):
         recovery_groups_top = get_recovery_groups_top(groups_file_name=groups_file_name,
-                                                      output_dir=group_members_output_dir,
-                                                      output_file_name=group_members_output_file_name,
+                                                      dir_name=group_members_output_dir,
+                                                      template_name=group_members_output_file_name,
                                                       primordial_users_set=primordial_users_set)
 
-        pages_top = read_top(top_file_name=pages_file_name)
+        recovery_pages_top = get_recovery_groups_top(groups_file_name=pages_file_name,
+                                                     dir_name=group_members_output_dir,
+                                                     template_name=group_members_output_file_name,
+                                                     primordial_users_set=primordial_users_set)
 
-        save_recovery_top(recovery_groups_top, pages_top, top_count, recovery_top_file_name)
-
-    if download_all_top_group:
-        download_groups_members(groups_file_name=recovery_top_file_name,
-                                tokens_file_name=tokens_file_name,
-                                output_dir=group_members_output_dir,
-                                output_file_name=group_members_output_file_name,
-                                save_count=tokens_count)
+        save_recovery_top(recovery_groups_top, recovery_pages_top, top_count, recovery_top_file_name)
 
     recovery_top = read_top(top_file_name=recovery_top_file_name)
 
