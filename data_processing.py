@@ -82,8 +82,8 @@ def get_recovery_groups_top(groups_file_name, dir_name, template_name, primordia
             with open('%s/%s_%d' % (dir_name, template_name, group_id), 'r') as file:
                 members = set(int(row.strip('\n')) for row in file if row)
             top_value = len(members & primordial_users_set)
-            members.clear()
             recovery_top[group_id] = {'top_value': top_value, 'members_count': len(members)}
+			members.clear()
             print('get_recovery_groups_top: group_id = %d top_value = %d' % (group_id, top_value))
         except FileNotFoundError:
             print('get_recovery_groups_top: file %s/%s_%d not found)' % (dir_name, template_name, group_id))
